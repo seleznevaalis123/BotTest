@@ -1,0 +1,2 @@
+token = '5959468316:AAHumed4g5mWMdm6AWSumxYZa5tMwN3ChG0'
+provider_token = '1744374395:TEST:456f5c5404655212fde1'
