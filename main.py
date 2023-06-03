@@ -1,66 +1,86 @@
 import telebot
-from telebot.types import LabeledPrice, ShippingOption, InlineKeyboardButton, InlineKeyboardMarkup
+from telebot.types import LabeledPrice, ShippingOption, InlineKeyboardButton, InlineKeyboardMarkup, BotCommand,\
+    BotCommandScope
 import config
+
 
 bot = telebot.TeleBot(config.token)
 currency = 'rub'
 
-# More about Payments: https://core.telegram.org/bots/payments
-
-prices = [LabeledPrice(label='iphone14 ProMax', amount=5750), LabeledPrice('Gift wrapping', 500)]
+prices = [LabeledPrice(label='RoboCraft#0094 [stripeRobo]', amount=575000), LabeledPrice('TaxFee', 50000)]
 
 shipping_options = [
-    ShippingOption(id='instant', title='Iphone14').add_price(LabeledPrice('iphone', 5750)),
-    ShippingOption(id='pickup', title='Local pickup').add_price(LabeledPrice('Pickup', 300))]
+    ShippingOption(id='instant', title='Fedex').add_price(LabeledPrice('Fedex', 575000)),
+    ShippingOption(id='pickup', title='Local pickup').add_price(LabeledPrice('Local pickup', 30000))]
+
 
 catalog_list = InlineKeyboardMarkup(row_width=2)
-catalog_list.add(InlineKeyboardButton(text="Iphone14", url='https://ldkfjg.com'),
-                  InlineKeyboardButton(text="Iphone14 ProMax", url='https://ldkfjg.com'),
-                  InlineKeyboardButton(text="Iphone15🚀", url='https://ldkfjg.com'))
+catalog_list.add(InlineKeyboardButton(text="RoboCraft🤖", url='https://grandbazar.io/ru/collection/robocraft'),
+                 InlineKeyboardButton(text="EverLands🗺", url='https://grandbazar.io/ru/collection/everlands'),
+                 InlineKeyboardButton(text="IFREELAND Passport☻", url='https://grandbazar.io/ru/collection/passport_freeland'))
 
+
+bot.set_my_commands(
+        commands=[
+            BotCommand('0094', 'RoboCraf#0057'),
+            BotCommand('0058', 'RoboCraf#0058'),
+            BotCommand('0059', 'RoboCraf#0059')],
+        scope=BotCommandScope())
 
 
 @bot.message_handler(commands=['start'])
 def command_start(message):
+    bot.send_animation(message.chat.id,
+                       animation="https://graphicdesignjunction.com/wp-content/uploads/2021/06/logo-animation-25.gif",
+                       width=1600,
+                       height=1200,)
     bot.send_message(message.chat.id,
-                     "Вас приветствует магазин Apple."
-                     " Сейчас в наличии 3 товара Iphone."
-                     " Выберите /buy для заказа, "
-                     "/catalog Каталог товаров,"
-                     " /terms Условия")
+                     "Welcome to the NFT shop."
+                     " Check out our collection!©"
+                     " Use the command:"
+                     " <b>/catalog</b>  collection list,"
+                     " <b>/help</b> support team"
+                     " <b>Select the item you liked in menu to buy</b>", parse_mode='HTML')
 
 
 @bot.message_handler(commands=['catalog'])
 def catalog(message):
-    bot.send_message(message.chat.id, text="test", reply_markup=catalog_list)
+    bot.send_message(message.chat.id,
+                     text="Check out our collections below☟",
+                     reply_markup=catalog_list)
 
 
-@bot.message_handler(commands=['terms'])
+@bot.callback_query_handler(func=lambda callback: callback.data)   # callback inline button 'callback_data'
+def callback_answers(callback):
+    if callback.data == 'https://grandbazar.io/ru/collection/robocraft':
+        bot.send_message(callback.message.chat.id, "Вы перешли по ссылке ")
+
+
+@bot.message_handler(commands=['help'])
 def command_terms(message):
     bot.send_message(message.chat.id,
-                     'Спасибо, что выбрали наш магазин\n'
-                     'По любым вопросам обращайтесь в службу поддержки')
+                     'For any question contact our support @support')
 
 
-@bot.message_handler(commands=['buy'])
+@bot.message_handler(commands=['0094'])
 def command_pay(message):
     bot.send_message(message.chat.id,
-                     "Реквизиты для тестовой карты: `4242 4242 4242 4242`"
+                     "Insert this Card number: `4242 4242 4242 4242`"
                      "\n\nThis is your demo invoice:", parse_mode='Markdown')
-    bot.send_invoice(
-                     message.chat.id,  #chat_id
-                     'Iphone 14 Pro Max', #title
-                     'Size: 128GB', #description
-                     'HAPPY FRIDAYS COUPON', #invoice_payload
-                     config.provider_token, #provider_token
-                     currency, #currency
-                     prices, #prices
-                     photo_url='https://bb-scm-prod-pim.oss-ap-southeast-5.aliyuncs.com/products/7eca1fd03f15b186b09bdb5c9a60ac0b/helix/01-APPLE-8DVPHAPPA-APPMQ9P3ID-A-Space%20Black1.jpg',
-                     photo_height=1000,  # !=0/None or picture won't be shown
-                     photo_width=1321,
-                     photo_size=160651,
+    bot.send_invoice(message.chat.id,   # chat_id
+                     'RoboCraft#0094 [stripeRobo]',  # title
+                     'RoboCraft#0094 [stripeRobo] has generated',  # description
+                     'HAPPY FRIDAYS COUPON',  # invoice_payload
+                     config.provider_token,  # provider_token
+                     currency,  # currency
+                     prices,  # prices
+                     photo_url="https://grandbazar.io/static/item/6182383f276c770013f8a0a2/59c9491f42741ce7dfcf@medium.png",
+                     photo_height=490,  # !=0/None or picture won't be shown
+                     photo_width=490,
+                     photo_size=35069,
                      is_flexible=True,  # True If you need to set up Shipping Fee
                      start_parameter='iphone-example')
+
 
 @bot.shipping_query_handler(func=lambda query: True)
 def shipping(shipping_query):
@@ -72,15 +92,17 @@ def shipping(shipping_query):
 @bot.pre_checkout_query_handler(func=lambda query: True)
 def checkout(pre_checkout_query):
     bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True,
-                                  error_message="Someone tried to steal your card's CVV!")
+                                  error_message="Someone tried to steal your card's CVV,"
+                                                " try to pay again in a few minutes, we need a small rest.")
 
 
 @bot.message_handler(content_types=['successful_payment'])
 def got_payment(message):
     bot.send_message(message.chat.id,
-                     'Спасибо за заказ! '.format(
+                     'Thanks for order!♡ '.format(
                          message.successful_payment.total_amount / 100, message.successful_payment.currency),
                      parse_mode='Markdown')
+    bot.send_poll(message.chat.id, question="Rate our marketplace", options=["😃", "😟", "😤"], is_anonymous=True)
 
 
 bot.infinity_polling(skip_pending=True)
