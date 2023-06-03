@@ -1,6 +1,8 @@
 import telebot
-from telebot.types import LabeledPrice, ShippingOption, InlineKeyboardButton, InlineKeyboardMarkup
+from telebot.types import LabeledPrice, ShippingOption, InlineKeyboardButton, InlineKeyboardMarkup, BotCommand,\
+    BotCommandScope
 import config
+
 
 bot = telebot.TeleBot(config.token)
 currency = 'rub'
@@ -8,7 +10,7 @@ currency = 'rub'
 prices = [LabeledPrice(label='RoboCraft#0094 [stripeRobo]', amount=575000), LabeledPrice('TaxFee', 50000)]
 
 shipping_options = [
-    ShippingOption(id='instant', title='Fedex').add_price(LabeledPrice('Fedex', 575000 )),
+    ShippingOption(id='instant', title='Fedex').add_price(LabeledPrice('Fedex', 575000)),
     ShippingOption(id='pickup', title='Local pickup').add_price(LabeledPrice('Local pickup', 30000))]
 
 
@@ -16,6 +18,14 @@ catalog_list = InlineKeyboardMarkup(row_width=2)
 catalog_list.add(InlineKeyboardButton(text="RoboCraft🤖", url='https://grandbazar.io/ru/collection/robocraft'),
                  InlineKeyboardButton(text="EverLands🗺", url='https://grandbazar.io/ru/collection/everlands'),
                  InlineKeyboardButton(text="IFREELAND Passport☻", url='https://grandbazar.io/ru/collection/passport_freeland'))
+
+
+bot.set_my_commands(
+        commands=[
+            BotCommand('0094', 'RoboCraf#0057'),
+            BotCommand('0058', 'RoboCraf#0058'),
+            BotCommand('0059', 'RoboCraf#0059')],
+        scope=BotCommandScope())
 
 
 @bot.message_handler(commands=['start'])
@@ -26,10 +36,11 @@ def command_start(message):
                        height=1200,)
     bot.send_message(message.chat.id,
                      "Welcome to the NFT shop."
-                     " Check out our collection."
-                     " Select /buy for order,"
-                     " /catalog collection list,"
-                     " /help support team")
+                     " Check out our collection!©"
+                     " Use the command:"
+                     " <b>/catalog</b>  collection list,"
+                     " <b>/help</b> support team"
+                     " <b>Select the item you liked in menu to buy</b>", parse_mode='HTML')
 
 
 @bot.message_handler(commands=['catalog'])
@@ -39,19 +50,24 @@ def catalog(message):
                      reply_markup=catalog_list)
 
 
+@bot.callback_query_handler(func=lambda callback: callback.data)   # callback inline button 'callback_data'
+def callback_answers(callback):
+    if callback.data == 'https://grandbazar.io/ru/collection/robocraft':
+        bot.send_message(callback.message.chat.id, "Вы перешли по ссылке ")
+
+
 @bot.message_handler(commands=['help'])
 def command_terms(message):
     bot.send_message(message.chat.id,
                      'For any question contact our support @support')
 
 
-@bot.message_handler(commands=['buy'])
+@bot.message_handler(commands=['0094'])
 def command_pay(message):
     bot.send_message(message.chat.id,
                      "Insert this Card number: `4242 4242 4242 4242`"
                      "\n\nThis is your demo invoice:", parse_mode='Markdown')
-    bot.send_invoice(
-                     message.chat.id,   # chat_id
+    bot.send_invoice(message.chat.id,   # chat_id
                      'RoboCraft#0094 [stripeRobo]',  # title
                      'RoboCraft#0094 [stripeRobo] has generated',  # description
                      'HAPPY FRIDAYS COUPON',  # invoice_payload
@@ -64,6 +80,7 @@ def command_pay(message):
                      photo_size=35069,
                      is_flexible=True,  # True If you need to set up Shipping Fee
                      start_parameter='iphone-example')
+
 
 @bot.shipping_query_handler(func=lambda query: True)
 def shipping(shipping_query):
@@ -82,9 +99,10 @@ def checkout(pre_checkout_query):
 @bot.message_handler(content_types=['successful_payment'])
 def got_payment(message):
     bot.send_message(message.chat.id,
-                     'Thanks for order! '.format(
+                     'Thanks for order!♡ '.format(
                          message.successful_payment.total_amount / 100, message.successful_payment.currency),
                      parse_mode='Markdown')
+    bot.send_poll(message.chat.id, question="Rate our marketplace", options=["😃", "😟", "😤"], is_anonymous=True)
 
 
 bot.infinity_polling(skip_pending=True)
