@@ -1,6 +1,6 @@
 import telebot
-from telebot.types import LabeledPrice, ShippingOption, InlineKeyboardButton, InlineKeyboardMarkup, BotCommand,\
-    BotCommandScope
+from telebot.types import LabeledPrice, ShippingOption, InlineKeyboardButton, InlineKeyboardMarkup,\
+    ReplyKeyboardMarkup, BotCommand, BotCommandScope, KeyboardButton
 import config
 
 
@@ -14,10 +14,12 @@ shipping_options = [
     ShippingOption(id='pickup', title='Local pickup').add_price(LabeledPrice('Local pickup', 30000))]
 
 
-catalog_list = InlineKeyboardMarkup(row_width=2)
+'''catalog_list = InlineKeyboardMarkup(row_width=2)
 catalog_list.add(InlineKeyboardButton(text="RoboCraft🤖", url='https://grandbazar.io/ru/collection/robocraft'),
                  InlineKeyboardButton(text="EverLands🗺", url='https://grandbazar.io/ru/collection/everlands'),
                  InlineKeyboardButton(text="IFREELAND Passport☻", url='https://grandbazar.io/ru/collection/passport_freeland'))
+
+
 
 
 bot.set_my_commands(
@@ -25,7 +27,7 @@ bot.set_my_commands(
             BotCommand('0094', 'RoboCraf#0057'),
             BotCommand('0058', 'RoboCraf#0058'),
             BotCommand('0059', 'RoboCraf#0059')],
-        scope=BotCommandScope())
+        scope=BotCommandScope())'''
 
 
 @bot.message_handler(commands=['start'])
@@ -34,26 +36,34 @@ def command_start(message):
                        animation="https://graphicdesignjunction.com/wp-content/uploads/2021/06/logo-animation-25.gif",
                        width=1600,
                        height=1200,)
-    bot.send_message(message.chat.id,
-                     "Welcome to the NFT shop."
-                     " Check out our collection!©"
-                     " Use the command:"
-                     " <b>/catalog</b>  collection list,"
-                     " <b>/help</b> support team"
-                     " <b>Select the item you liked in menu to buy</b>", parse_mode='HTML')
+    markup = ReplyKeyboardMarkup(resize_keyboard=True)
+    menuitem1 = KeyboardButton("🍽️ORDER FOOD")
+    menuitem2 = KeyboardButton("🪷SPA")
+    menuitem3 = KeyboardButton("🧘‍YOGA")
+    menuitem4 = KeyboardButton("📣EVENTS")
+    menuitem5 = KeyboardButton("⚙️BOT SETTINGS")
+    markup.add(menuitem1, menuitem2, menuitem3, menuitem4, menuitem5)
+    bot.send_message(message.chat.id, "Welcome to the Official TGBot TSPA!", reply_markup=markup)
+
+@bot.message_handler(content_types=['text'])
+def bot_message(message):
+    if message.text == "🪷SPA":
+        mainMenu = InlineKeyboardMarkup(row_width=2)
+        menuitem1 = InlineKeyboardButton(text='📞WhatsApp', url="https://wa.me")
+        backbutton = InlineKeyboardButton(text="Schedule", callback_data="bot_messageone")
+        mainMenu.add(menuitem1, backbutton)
+        bot.send_message(message.chat.id, "Wellcome to the Spa!", reply_markup=mainMenu)
 
 
-@bot.message_handler(commands=['catalog'])
-def catalog(message):
-    bot.send_message(message.chat.id,
-                     text="Check out our collections below☟",
-                     reply_markup=catalog_list)
-
-
-@bot.callback_query_handler(func=lambda callback: callback.data)   # callback inline button 'callback_data'
-def callback_answers(callback):
-    if callback.data == 'https://grandbazar.io/ru/collection/robocraft':
-        bot.send_message(callback.message.chat.id, "Вы перешли по ссылке ")
+@bot.callback_query_handler
+def bot_messageone(message):
+    markup = ReplyKeyboardMarkup(resize_keyboard=True)
+    menuitem1 = KeyboardButton("🍽️ORDER FOOD")
+    menuitem2 = KeyboardButton("🪷SPA")
+    menuitem3 = KeyboardButton("🧘‍YOGA")
+    menuitem5 = KeyboardButton("⚙️BOT SETTINGS")
+    markup.add(menuitem1, menuitem2, menuitem3, menuitem5)
+    bot.send_message(message.chat.id, "Welcome to the Official TGBot TSPA!", reply_markup=markup)
 
 
 @bot.message_handler(commands=['help'])
